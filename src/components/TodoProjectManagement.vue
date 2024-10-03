@@ -6,52 +6,65 @@
       <button @click="setFilter('ongoing')" :class="{ active: filter === 'ongoing' }">Ongoing</button>
     </div>
 
-    <!-- Project List -->
-    <div v-for="(project, index) in filteredProjects" :key="index" class="project-item">
-      <span>{{ project.name }}</span>
-      <div class="flex">
-        <button @click="deleteProject(index)"><font-awesome-icon :icon="['fas', 'trash']" /></button>
-        <button @click="toggleStatus(index)">
-          <span v-if="project.status === 'completed'" class="change-color"><font-awesome-icon
-              :icon="['fas', 'check']" /></span>
-          <span v-else><font-awesome-icon :icon="['fas', 'check']" /> </span>
-        </button>
+    <div v-for="(project, index) in filteredProjects" :key="index" class="project-item"
+      :class="{ 'border-green': project.status === 'completed', 'border-red': project.status !== 'completed' }">
+      <div class="project-header">
+        <h4>{{ project.name }}</h4>
+        <div class="flex">
+          <button @click="deleteProject(index)">
+            <font-awesome-icon :icon="['fas', 'trash']" />
+          </button>
+          <button @click="editProject(index)">
+            <font-awesome-icon :icon="['fas', 'pen']" />
+          </button>
+          <button @click="toggleStatus(index)">
+            <span v-if="project.status === 'completed'" class="change-color">
+              <font-awesome-icon :icon="['fas', 'check']" />
+            </span>
+            <span v-else>
+              <font-awesome-icon :icon="['fas', 'check']" />
+            </span>
+          </button>
+        </div>
       </div>
+      <p class="project-details">{{ project.details }}</p>
     </div>
   </div>
 </template>
 
 <script>
-import projectDetail from '../data/project.json'
 export default {
   name: 'TodoProjectManagement',
+  props: {
+    projects: {
+      type: Array,
+      required: true,
+    },
+  },
   data() {
     return {
       filter: 'all',
-      projects: projectDetail
     };
   },
   computed: {
     filteredProjects() {
-      if (this.filter === 'all') {
-        return this.projects;
-      } else {
-        return this.projects.filter(project => project.status === this.filter);
-      }
-    }
+      return this.filter === 'all' ? this.projects : this.projects.filter(project => project.status === this.filter);
+    },
   },
   methods: {
     setFilter(status) {
       this.filter = status;
     },
     deleteProject(index) {
-      this.projects.splice(index, 1);
+      this.$emit('delete-project', index);
     },
     toggleStatus(index) {
-      const project = this.projects[index];
-      project.status = project.status === 'completed' ? 'ongoing' : 'completed';
+      this.$emit('toggle-status', { index });
+    },
+    editProject(index) {
+      this.$router.push({ name: 'EditProject', params: { index } });
     }
-  }
+  },
 };
 </script>
 
@@ -74,17 +87,32 @@ export default {
 }
 
 .filter-buttons button.active {
-  background-color: green;
-  color: white;
+  background-color: lightgray;
+  color: black;
 }
 
 .project-item {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   padding: 15px;
   border: 1px solid #eee;
   margin-bottom: 10px;
   background-color: #fafafa;
+  border-left: 5px solid;
+}
+
+.border-green {
+  border-left-color: green;
+}
+
+.border-red {
+  border-left-color: red;
+}
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .flex {
@@ -95,9 +123,32 @@ export default {
 button {
   border: none;
   color: gray;
+  background-color: #fafafa;
 }
 
 .change-color {
   color: green;
+}
+
+.project-details {
+  margin-top: 0px;
+  font-size: 14px;
+  color: gray;
+}
+
+@media(max-width:575px) {
+  .filter-buttons {
+    gap: 12px;
+  }
+
+  .projects-container {
+    padding: 10px;
+  }
+}
+
+@media(max-width:375px) {
+  .filter-buttons {
+    gap: 0px;
+  }
 }
 </style>
