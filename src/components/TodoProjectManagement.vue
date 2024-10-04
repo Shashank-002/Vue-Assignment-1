@@ -6,18 +6,22 @@
       <button @click="setFilter('ongoing')" :class="{ active: filter === 'ongoing' }">Ongoing</button>
     </div>
 
+    <div v-if="filteredProjects.length === 0" class="no-projects-message">
+      No projects yet. Add a new one!
+    </div>
+
     <div v-for="(project, index) in filteredProjects" :key="index" class="project-item"
       :class="{ 'border-green': project.status === 'completed', 'border-red': project.status !== 'completed' }">
       <div class="project-header">
-        <h4>{{ project.name }}</h4>
+        <h4 @click="showDetails(index)">{{ project.name }}</h4>
         <div class="flex">
-          <button @click="deleteProject(index)">
+          <button @click="deleteProject(index)" class="icon">
             <font-awesome-icon :icon="['fas', 'trash']" />
           </button>
-          <button @click="editProject(index)">
+          <button @click="editProject(index)" class="icon">
             <font-awesome-icon :icon="['fas', 'pen']" />
           </button>
-          <button @click="toggleStatus(index)">
+          <button @click="toggleStatus(index)" class="icon">
             <span v-if="project.status === 'completed'" class="change-color">
               <font-awesome-icon :icon="['fas', 'check']" />
             </span>
@@ -27,7 +31,7 @@
           </button>
         </div>
       </div>
-      <p class="project-details">{{ project.details }}</p>
+      <p v-if="project.showDetails" class="project-details">{{ project.details }}</p>
     </div>
   </div>
 </template>
@@ -39,6 +43,7 @@ export default {
     projects: {
       type: Array,
       required: true,
+      showDetails: false
     },
   },
   data() {
@@ -63,6 +68,9 @@ export default {
     },
     editProject(index) {
       this.$router.push({ name: 'EditProject', params: { index } });
+    },
+    showDetails(index) {
+      this.$emit('toggle-details', index);
     }
   },
 };
@@ -81,24 +89,36 @@ export default {
 
 .filter-buttons button {
   padding: 10px;
-  background-color: lightgray;
+  background-color: rgb(236, 233, 233);
   border: none;
   cursor: pointer;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .filter-buttons button.active {
-  background-color: lightgray;
+  background-color: rgb(236, 233, 233);
   color: black;
 }
 
 .project-item {
   display: flex;
   flex-direction: column;
-  padding: 15px;
+  padding: 2px 15px;
   border: 1px solid #eee;
+  border-radius: 5px;
   margin-bottom: 10px;
   background-color: #fafafa;
   border-left: 5px solid;
+}
+
+h4 {
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.icon {
+  font-size: 20px;
 }
 
 .border-green {
@@ -132,9 +152,21 @@ button {
 
 .project-details {
   margin-top: 0px;
-  font-size: 14px;
+  font-size: 16px;
   color: gray;
+  overflow: hidden;
+  white-space: normal;
+  word-wrap: break-word;
+  word-break: break-word;
 }
+
+.no-projects-message {
+  text-align: center;
+  font-size: 18px;
+  color: red;
+  margin-top: 20px;
+}
+
 
 @media(max-width:575px) {
   .filter-buttons {

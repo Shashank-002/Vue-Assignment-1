@@ -6,7 +6,8 @@
         </div>
 
         <router-view :projects="projects" @add-project="addProject" @update-project="updateProject"
-            @delete-project="deleteProject" @toggle-status="toggleStatus"></router-view>
+            @delete-project="deleteProject" @toggle-status="toggleStatus"
+            @toggle-details="handleToggleDetails"></router-view>
     </div>
 </template>
 
@@ -47,7 +48,10 @@ export default {
             // Toggle the project status and save
             this.projects[index].status = this.projects[index].status === 'completed' ? 'ongoing' : 'completed';
             this.saveToLocalStorage();
-        }
+        },
+        handleToggleDetails(index) {
+            this.projects[index].showDetails = !this.projects[index].showDetails;
+        },
     }
 };
 </script>
@@ -57,7 +61,7 @@ export default {
 .app-container {
     font-family: Arial, sans-serif;
     padding: 20px;
-    background-color: lightgray;
+    background-color: rgb(236, 233, 233);
     width: 50%;
     margin: 100px auto;
 }
@@ -65,14 +69,14 @@ export default {
 .nav {
     display: flex;
     gap: 20px;
-    margin-bottom: 20px;
+    margin: 10px auto;
     justify-content: center;
 }
 
 .nav-link {
     text-decoration: none;
     color: gray;
-    font-size: 18px;
+    font-size: 20px;
     padding-bottom: 3px;
 }
 

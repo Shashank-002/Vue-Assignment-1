@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import Projects from '../components/TodoProjectManagement.vue';
-import AddProject from '../components/AddProject.vue';
+import AddProject from '../components/TodoAddProject.vue';
 
 const routes = [
   {
