@@ -3,14 +3,15 @@
         <form @submit.prevent="submitForm">
             <div class="form-group">
                 <label for="title">Title</label>
-                <input type="text" id="title" v-model="project.name" placeholder="Enter project title" />
+                <input type="text" id="title" v-model="project.name" @input="handleInputChange('name')"
+                    placeholder="Enter project title" />
                 <p v-if="errors.title" class="error-message">{{ errors.title }}</p>
             </div>
 
             <div class="form-group">
                 <label for="details">Details</label>
                 <textarea id="details" v-model="project.details" placeholder="Enter project details"
-                    @input="resizeTextarea" ref="detailsTextarea"></textarea>
+                    @input="resizeTextarea, handleInputChange('details')" ref="detailsTextarea"></textarea>
                 <p v-if="errors.details" class="error-message">{{ errors.details }}</p>
             </div>
 
@@ -31,35 +32,12 @@ export default {
             errors: {
                 title: '',
                 details: ''
-            }
+            },
+            isEditMode: false,
+            index: null
         };
     },
-    watch: {
-        index: {
-            handler(newVal) {
-                if (newVal !== null && Array.isArray(this.projects) && this.projects.length > newVal) {
-                    this.project = { ...this.projects[newVal] };
-                } else {
-                    this.project = { name: '', details: '', status: 'ongoing' };
-                }
-            },
-            immediate: true,
-        },
-        'project.name'(newValue) {
-            if (!newValue.trim()) {
-                this.errors.title = 'This field is required';
-            } else {
-                this.errors.title = '';
-            }
-        },
-        'project.details'(newValue) {
-            if (!newValue.trim()) {
-                this.errors.details = 'This field is required';
-            } else {
-                this.errors.details = '';
-            }
-        },
-    },
+
     methods: {
         validateForm() {
             let isValid = true;
@@ -79,6 +57,10 @@ export default {
             return isValid;
         },
 
+        handleInputChange() {
+            this.validateForm();
+        },
+
         submitForm() {
             if (this.validateForm()) {
                 const projects = JSON.parse(localStorage.getItem('projects')) || [];
@@ -86,7 +68,8 @@ export default {
                 if (this.isEditMode && this.index !== null) {
                     projects[this.index] = { ...this.project }; // Update existing project
                 } else {
-                    projects.push({ ...this.project }); // Add new project
+                    const newProject = { ...this.project, id: Date.now() };
+                    projects.push(newProject)
                 }
 
                 localStorage.setItem('projects', JSON.stringify(projects));
@@ -99,7 +82,22 @@ export default {
             textarea.style.height = 'auto';
             textarea.style.height = textarea.scrollHeight + 'px';
         }
-    }
+    },
+    mounted() {
+        // Get the index from the route parameter
+        this.index = this.$route.params.index !== undefined ? parseInt(this.$route.params.index, 10) : null;
+
+        if (this.index !== null) {
+            const projects = JSON.parse(localStorage.getItem('projects')) || [];
+            if (projects[this.index]) {
+                this.project = { ...projects[this.index] };
+                this.isEditMode = true;
+            }
+            else {
+                console.error(`Project at index ${this.index} not found.`);
+            }
+        }
+    },
 };
 </script>
 
@@ -114,13 +112,6 @@ export default {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     width: 92%;
 }
-
-/* h2 {
-    color: #333;
-    margin-bottom: 20px;
-    font-size: 1.8rem;
-    text-align: center;
-  } */
 
 .form-group {
     width: 100%;
@@ -206,29 +197,17 @@ textarea:focus {
     .add-update-project-container {
         width: 82%;
     }
-
-    /* h2 {
-      font-size: 1.3rem;
-    } */
 }
 
 @media (max-width:425px) {
     .add-update-project-container {
         width: 79%;
     }
-
-    /* h2 {
-      font-size: 1.3rem;
-    } */
 }
 
 @media (max-width:375px) {
     .add-update-project-container {
         width: 75%;
     }
-
-    /* h2 {
-      font-size: 1.3rem;
-    } */
 }
 </style>

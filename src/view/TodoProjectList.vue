@@ -12,18 +12,18 @@
         </div>
 
         <div v-else>
-            <div v-for="(project, index) in filteredProjects" :key="index" class="project-item"
+            <div v-for="project in filteredProjects" :key="project.id" class="project-item"
                 :class="{ 'border-green': project.status === 'completed', 'border-red': project.status !== 'completed' }">
                 <div class="project-header">
-                    <h4 @click="handleToggleDetails(index)">{{ project.name }}</h4>
+                    <h4 @click="handleToggleDetails(project.id)">{{ project.name }}</h4>
                     <div class="flex">
-                        <button @click="deleteProject(index)" class="icon">
+                        <button @click="deleteProject(project.id)" class="icon">
                             <font-awesome-icon :icon="['fas', 'trash']" />
                         </button>
-                        <button @click="editProject(index)" class="icon">
+                        <button @click="editProject(project.id)" class="icon">
                             <font-awesome-icon :icon="['fas', 'pen']" />
                         </button>
-                        <button @click="toggleStatus(index)" class="icon">
+                        <button @click="toggleStatus(project.id)" class="icon">
                             <span v-if="project.status === 'completed'" class="change-color">
                                 <font-awesome-icon :icon="['fas', 'check']" />
                             </span>
@@ -36,7 +36,7 @@
                 <p v-if="project.showDetails" class="project-details">{{ project.details }}</p>
             </div>
         </div>
-        <router-view />
+        <!-- <router-view /> -->
     </div>
 </template>
 
@@ -63,31 +63,42 @@ export default {
         setFilter(status) {
             this.filter = status;
         },
-        deleteProject(index) {
-            this.projects.splice(index, 1);
+        deleteProject(id) {
+            // this.projects.splice(index, 1);
+            this.projects = this.projects.filter(project => project.id !== id);
             this.saveToLocalStorage();
         },
-        toggleStatus(index) {
-            // Check if project exists
-            if (this.projects[index]) {
-                // Toggle the project status and save
-                this.projects[index].status = this.projects[index].status === 'completed' ? 'ongoing' : 'completed';
+        toggleStatus(id) {
+            const project = this.projects.find(project => project.id === id);
+            if (project) {
+                project.status = project.status === 'completed' ? 'ongoing' : 'completed';
                 this.saveToLocalStorage();
             } else {
-                console.error(`Project at index ${index} does not exist.`);
+                console.error(`Project with ID ${id} does not exist.`);
             }
         },
-        editProject(index) {
-            this.$router.push({ name: 'EditProject', params: { index } });
+        editProject(id) {
+            const projectIndex = this.projects.findIndex(project => project.id === id);
+            if (projectIndex !== -1) {
+                this.$router.push({
+                    name: 'EditProject',
+                    params: { index: projectIndex }
+                });
+            } else {
+                console.error(`Project with ID ${id} does not exist.`);
+            }
         },
-        handleToggleDetails(index) {
-            this.projects[index].showDetails = !this.projects[index].showDetails;
+        handleToggleDetails(id) {
+            const project = this.projects.find(project => project.id === id);
+            if (project) {
+                project.showDetails = !project.showDetails;
+            }
         },
     },
     mounted() {
         const storedProjects = JSON.parse(localStorage.getItem('projects')) || [];
         this.projects = storedProjects;
-    }
+    },
 };
 </script>
 
@@ -148,6 +159,10 @@ h4 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    overflow: hidden;
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-word;
 }
 
 .flex {
@@ -185,17 +200,25 @@ button {
 
 @media(max-width:575px) {
     .filter-buttons {
-        gap: 12px;
+        gap: 8px;
     }
 
     .projects-container {
         padding: 10px;
+    }
+
+    .filter-buttons button {
+        font-size: 12px;
     }
 }
 
 @media(max-width:375px) {
     .filter-buttons {
         gap: 0px;
+    }
+
+    .filter-buttons button {
+        font-size: 10px;
     }
 }
 </style>
