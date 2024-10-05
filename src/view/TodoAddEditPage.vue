@@ -3,7 +3,7 @@
         <form @submit.prevent="submitForm">
             <div class="form-group">
                 <label for="title">Title</label>
-                <input type="text" id="title" v-model="project.name" @input="handleInputChange('name')"
+                <input type="text" id="title" v-model="project.name" @input="validateField('name')"
                     placeholder="Enter project title" />
                 <p v-if="errors.title" class="error-message">{{ errors.title }}</p>
             </div>
@@ -11,7 +11,7 @@
             <div class="form-group">
                 <label for="details">Details</label>
                 <textarea id="details" v-model="project.details" placeholder="Enter project details"
-                    @input="resizeTextarea, handleInputChange('details')" ref="detailsTextarea"></textarea>
+                    @input="resizeTextarea, validateField('details')" ref="detailsTextarea"></textarea>
                 <p v-if="errors.details" class="error-message">{{ errors.details }}</p>
             </div>
 
@@ -53,10 +53,6 @@ export default {
             this.validateField('details');
 
             return !this.errors.title && !this.errors.details;
-        },
-
-        handleInputChange(field) {
-            this.validateField(field);
         },
 
         submitForm() {
