@@ -34,44 +34,48 @@ export default {
                 details: ''
             },
             isEditMode: false,
-            index: null
+            id: null
         };
     },
 
     methods: {
-        validateForm() {
-            let isValid = true;
-            this.errors.title = '';
-            this.errors.details = '';
-
-            if (!this.project.name.trim()) {
-                this.errors.title = 'This field is required';
-                isValid = false;
+        validateField(field) {
+            if (field === 'name') {
+                this.errors.title = this.project.name.trim() ? '' : 'This field is required';
             }
-
-            if (!this.project.details.trim()) {
-                this.errors.details = 'This field is required';
-                isValid = false;
+            if (field === 'details') {
+                this.errors.details = this.project.details.trim() ? '' : 'This field is required';
             }
-
-            return isValid;
         },
 
-        handleInputChange() {
-            this.validateForm();
+        validateForm() {
+            this.validateField('name');
+            this.validateField('details');
+
+            return !this.errors.title && !this.errors.details;
+        },
+
+        handleInputChange(field) {
+            this.validateField(field);
         },
 
         submitForm() {
             if (this.validateForm()) {
                 const projects = JSON.parse(localStorage.getItem('projects')) || [];
 
-                if (this.isEditMode && this.index !== null) {
-                    projects[this.index] = { ...this.project }; // Update existing project
+                if (this.isEditMode && this.id !== null) {
+                    const projectIndex = projects.findIndex(project => project.id === this.id);
+
+                    // If the project is found, update it
+                    if (projectIndex !== -1) {
+                        projects[projectIndex] = { ...this.project, id: this.id };
+                    }
+
+
                 } else {
                     const newProject = { ...this.project, id: Date.now() };
                     projects.push(newProject)
                 }
-
                 localStorage.setItem('projects', JSON.stringify(projects));
                 this.$router.push('/');
             }
@@ -84,17 +88,18 @@ export default {
         }
     },
     mounted() {
-        // Get the index from the route parameter
-        this.index = this.$route.params.index !== undefined ? parseInt(this.$route.params.index, 10) : null;
+        // Get the id from the route parameter
+        this.id = this.$route.params.id !== undefined ? Number((this.$route.params.id)) : null;
 
-        if (this.index !== null) {
+        if (this.id !== null) {
             const projects = JSON.parse(localStorage.getItem('projects')) || [];
-            if (projects[this.index]) {
-                this.project = { ...projects[this.index] };
+            const projectToEdit = projects.find(project => project.id === (this.id)); // Find the project by id
+            if (projectToEdit) {
+                this.project = { ...projectToEdit };
                 this.isEditMode = true;
-            }
-            else {
-                console.error(`Project at index ${this.index} not found.`);
+            } else {
+                alert(`Project not found.`);
+                this.$router.push('/');
             }
         }
     },

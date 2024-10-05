@@ -1,9 +1,10 @@
 <template>
     <div class="projects-container">
         <div class="filter-buttons">
-            <button @click="setFilter('all')" :class="{ active: filter === 'all' }">View All</button>
-            <button @click="setFilter('completed')" :class="{ active: filter === 'completed' }">Completed</button>
-            <button @click="setFilter('ongoing')" :class="{ active: filter === 'ongoing' }">Ongoing</button>
+            <button v-for="option in filterOptions" :key="option" @click="setFilter(option)"
+                :class="{ active: filter === option }">
+                {{ option }}
+            </button>
         </div>
 
 
@@ -13,7 +14,7 @@
 
         <div v-else>
             <div v-for="project in filteredProjects" :key="project.id" class="project-item"
-                :class="{ 'border-green': project.status === 'completed', 'border-red': project.status !== 'completed' }">
+                :class="project.status === 'completed' ? 'border-green' : 'border-red'">
                 <div class="project-header">
                     <h4 @click="handleToggleDetails(project.id)">{{ project.name }}</h4>
                     <div class="flex">
@@ -24,19 +25,14 @@
                             <font-awesome-icon :icon="['fas', 'pen']" />
                         </button>
                         <button @click="toggleStatus(project.id)" class="icon">
-                            <span v-if="project.status === 'completed'" class="change-color">
-                                <font-awesome-icon :icon="['fas', 'check']" />
-                            </span>
-                            <span v-else>
-                                <font-awesome-icon :icon="['fas', 'check']" />
-                            </span>
+                            <font-awesome-icon :icon="['fas', 'check']"
+                                :class="project.status === 'completed' ? 'change-color' : ''" />
                         </button>
                     </div>
                 </div>
                 <p v-if="project.showDetails" class="project-details">{{ project.details }}</p>
             </div>
         </div>
-        <!-- <router-view /> -->
     </div>
 </template>
 
@@ -45,6 +41,7 @@ export default {
     name: 'TodoProjectList',
     data() {
         return {
+            filterOptions: ['all', 'completed', 'ongoing'],
             filter: 'all',
             projects: []
 
@@ -56,13 +53,14 @@ export default {
         },
     },
     methods: {
+        setFilter(option) {
+            this.filter = option; 
+        },
         saveToLocalStorage() {
             // Save projects to localStorage
             localStorage.setItem('projects', JSON.stringify(this.projects));
         },
-        setFilter(status) {
-            this.filter = status;
-        },
+
         deleteProject(id) {
             // this.projects.splice(index, 1);
             this.projects = this.projects.filter(project => project.id !== id);
@@ -78,15 +76,11 @@ export default {
             }
         },
         editProject(id) {
-            const projectIndex = this.projects.findIndex(project => project.id === id);
-            if (projectIndex !== -1) {
-                this.$router.push({
-                    name: 'EditProject',
-                    params: { index: projectIndex }
-                });
-            } else {
-                console.error(`Project with ID ${id} does not exist.`);
-            }
+
+            this.$router.push({
+                name: 'EditProject',
+                params: { id }
+            });
         },
         handleToggleDetails(id) {
             const project = this.projects.find(project => project.id === id);
@@ -96,8 +90,7 @@ export default {
         },
     },
     mounted() {
-        const storedProjects = JSON.parse(localStorage.getItem('projects')) || [];
-        this.projects = storedProjects;
+        this.projects = JSON.parse(localStorage.getItem('projects')) || [];
     },
 };
 </script>

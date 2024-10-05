@@ -1,27 +1,21 @@
 import { createRouter, createWebHashHistory } from "vue-router";
-import Projects from "../view/TodoProjectList.vue";
-import AddEditProject from "../view/TodoAddEditPage.vue";
 
 const routes = [
   {
     path: "/",
     name: "Projects",
-    component: Projects,
+    component: () => import("../view/TodoProjectList.vue"), 
   },
   {
     path: "/add",
     name: "AddProject",
-    component: AddEditProject,
+    component: () => import("../view/TodoAddEditPage.vue"), 
     props: { isEditMode: false },
   },
   {
-    path: "/edit/:index",
+    path: "/edit/:id",
     name: "EditProject",
-    component: AddEditProject,
-    props: (route) => ({
-      isEditMode: true,
-      index: parseInt(route.params.index),
-    }),
+    component: () => import("../view/TodoAddEditPage.vue"), 
   },
 ];
 
