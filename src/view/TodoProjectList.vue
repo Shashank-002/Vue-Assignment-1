@@ -1,36 +1,67 @@
 <template>
-    <div class="projects-container">
-        <div class="filter-buttons">
-            <button v-for="option in filterOptions" :key="option" @click="setFilter(option)"
-                :class="{ active: filter === option }">
+    <div class="projects-container p-5">
+        <div class="filter-buttons flex gap-5 mb-5">
+            <button v-for="option in filterOptions" :key="option" @click="setFilter(option)" :class="{
+                'bg-gray-100 text-black': filter === option,
+                'bg-gray-100 text-gray-400': filter !== option,
+            }" class="py-2 uppercase font-semibold text-xs md:px-4 md:text-sm">
                 {{ option }}
             </button>
         </div>
 
-
-        <div v-if="filteredProjects && filteredProjects.length === 0" class="no-projects-message">
+        <div v-if="filteredProjects && filteredProjects.length === 0" class="text-center text-red-500 text-lg mt-5">
             No projects yet. Add a new one!
         </div>
 
         <div v-else>
-            <div v-for="project in filteredProjects" :key="project.id" class="project-item"
-                :class="project.status === 'completed' ? 'border-green' : 'border-red'">
-                <div class="project-header">
-                    <h4 @click="handleToggleDetails(project.id)">{{ project.name }}</h4>
-                    <div class="flex">
-                        <button @click="deleteProject(project.id)" class="icon">
+            <div v-for="project in filteredProjects" :key="project.id" :class="[
+                'project-item flex flex-col p-4 mb-4 bg-gray-50 border border-gray-300 rounded-lg',
+                project.status === 'completed'
+                    ? 'border-l-4 border-green-500'
+                    : 'border-l-4 border-red-500',
+            ]">
+                <div class="project-header flex justify-between items-center ">
+                    <h4 @click="handleToggleDetails(project.id)"
+                        class="text-md cursor-pointer break-words overflow-hidden md:text-xl xl:text-2xl">
+                        {{ project.name }}
+                    </h4>
+                    <div class="flex gap-2 text-sm md:gap-4 md:text-lg">
+                        <button @click="openDeleteModal(project.id)" class="text-gray-500">
                             <font-awesome-icon :icon="['fas', 'trash']" />
                         </button>
-                        <button @click="editProject(project.id)" class="icon">
+                        <button @click="editProject(project.id)" class="text-gray-500">
                             <font-awesome-icon :icon="['fas', 'pen']" />
                         </button>
-                        <button @click="toggleStatus(project.id)" class="icon">
-                            <font-awesome-icon :icon="['fas', 'check']"
-                                :class="project.status === 'completed' ? 'change-color' : ''" />
+                        <button @click="toggleStatus(project.id)"
+                            :class="{ 'text-green-500': project.status === 'completed' }">
+                            <font-awesome-icon :icon="['fas', 'check']" />
                         </button>
                     </div>
                 </div>
-                <p v-if="project.showDetails" class="project-details">{{ project.details }}</p>
+                <p v-if="project.showDetails" class="text-gray-600 mt-2 break-words overflow-hidden text-xs">
+                    {{ project.details }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div v-if="isModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 ">
+            <div class="bg-white rounded-lg shadow-lg w-3/4 md:w-3/5 lg:w-2/5  p-6 2xl:w-1/4">
+                <h3 class="text-lg font-semibold mb-4">Delete Confirmation</h3>
+                <hr class="mt-0 mb-5">
+                <p class="text-gray-700 bg-red-300 rounded-md p-3">Are you sure you want to delete this project?</p>
+                <hr class="mt-5 mb-0">
+                <div class="mt-6 flex justify-end">
+                    <button @click="closeDeleteModal"
+                        class="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400">
+                        Cancel
+                    </button>
+
+                    <button @click="confirmDelete"
+                        class="bg-red-500 text-white py-2 px-4 ml-2 rounded hover:bg-red-600">
+                        Delete
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -38,180 +69,72 @@
 
 <script>
 export default {
-    name: 'TodoProjectList',
+    name: "TodoProjectList",
     data() {
         return {
-            filterOptions: ['all', 'completed', 'ongoing'],
-            filter: 'all',
-            projects: []
-
+            filterOptions: ["all", "completed", "ongoing"],
+            filter: "all",
+            projects: [],
+            isModalOpen: false,
+            projectIdToDelete: null, // Store the ID of the project to delete
         };
     },
     computed: {
         filteredProjects() {
-            return this.filter === 'all' ? this.projects : this.projects.filter(project => project.status === this.filter);
+            return this.filter === "all"
+                ? this.projects
+                : this.projects.filter((project) => project.status === this.filter);
         },
     },
     methods: {
         setFilter(option) {
-            this.filter = option; 
+            this.filter = option;
         },
         saveToLocalStorage() {
             // Save projects to localStorage
-            localStorage.setItem('projects', JSON.stringify(this.projects));
+            localStorage.setItem("projects", JSON.stringify(this.projects));
         },
-
+        openDeleteModal(id) {
+            this.projectIdToDelete = id; // Set the project ID to delete
+            this.isModalOpen = true; // Open the modal
+        },
+        closeDeleteModal() {
+            this.isModalOpen = false; // Close the modal
+            this.projectIdToDelete = null; // Reset the project ID
+        },
+        confirmDelete() {
+            this.deleteProject(this.projectIdToDelete); // Delete the project
+            this.closeDeleteModal(); // Close the modal
+        },
         deleteProject(id) {
-            // this.projects.splice(index, 1);
-            this.projects = this.projects.filter(project => project.id !== id);
+            this.projects = this.projects.filter((project) => project.id !== id);
             this.saveToLocalStorage();
         },
         toggleStatus(id) {
-            const project = this.projects.find(project => project.id === id);
+            const project = this.projects.find((project) => project.id === id);
             if (project) {
-                project.status = project.status === 'completed' ? 'ongoing' : 'completed';
+                project.status =
+                    project.status === "completed" ? "ongoing" : "completed";
                 this.saveToLocalStorage();
             } else {
                 console.error(`Project with ID ${id} does not exist.`);
             }
         },
         editProject(id) {
-
             this.$router.push({
-                name: 'EditProject',
-                params: { id }
+                name: "EditProject",
+                params: { id },
             });
         },
         handleToggleDetails(id) {
-            const project = this.projects.find(project => project.id === id);
+            const project = this.projects.find((project) => project.id === id);
             if (project) {
                 project.showDetails = !project.showDetails;
             }
         },
     },
     mounted() {
-        this.projects = JSON.parse(localStorage.getItem('projects')) || [];
+        this.projects = JSON.parse(localStorage.getItem("projects")) || [];
     },
 };
 </script>
-
-<style scoped>
-.projects-container {
-    padding: 20px;
-}
-
-.filter-buttons {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.filter-buttons button {
-    padding: 10px;
-    background-color: rgb(236, 233, 233);
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.filter-buttons button.active {
-    background-color: rgb(236, 233, 233);
-    color: black;
-}
-
-.project-item {
-    display: flex;
-    flex-direction: column;
-    padding: 2px 15px;
-    border: 1px solid #eee;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    background-color: #fafafa;
-    border-left: 5px solid;
-}
-
-h4 {
-    font-size: 20px;
-    cursor: pointer;
-}
-
-.icon {
-    font-size: 20px;
-}
-
-.border-green {
-    border-left-color: green;
-}
-
-.border-red {
-    border-left-color: red;
-}
-
-.project-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    overflow: hidden;
-    white-space: normal;
-    word-wrap: break-word;
-    word-break: break-word;
-}
-
-.flex {
-    display: flex;
-    gap: 10px;
-}
-
-button {
-    border: none;
-    color: gray;
-    background-color: #fafafa;
-}
-
-.change-color {
-    color: green;
-}
-
-.project-details {
-    margin-top: 0px;
-    font-size: 16px;
-    color: gray;
-    overflow: hidden;
-    white-space: normal;
-    word-wrap: break-word;
-    word-break: break-word;
-}
-
-.no-projects-message {
-    text-align: center;
-    font-size: 18px;
-    color: red;
-    margin-top: 20px;
-}
-
-
-@media(max-width:575px) {
-    .filter-buttons {
-        gap: 8px;
-    }
-
-    .projects-container {
-        padding: 10px;
-    }
-
-    .filter-buttons button {
-        font-size: 12px;
-    }
-}
-
-@media(max-width:375px) {
-    .filter-buttons {
-        gap: 0px;
-    }
-
-    .filter-buttons button {
-        font-size: 10px;
-    }
-}
-</style>

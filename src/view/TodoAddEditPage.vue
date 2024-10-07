@@ -1,23 +1,26 @@
 <template>
-    <div class="add-update-project-container">
+    <div class="add-update-project-container bg-white mt-16 mb-10 p-3 md:p-10 rounded-md">
         <form @submit.prevent="submitForm">
-            <div class="form-group">
-                <label for="title">Title</label>
+            <div class="form-group py-6">
+                <label for="title" class="text-gray-400 font-semibold text-xs uppercase md:text-md ">Title</label>
                 <input type="text" id="title" v-model="project.name" @input="validateField('name')"
-                    placeholder="Enter project title" />
-                <p v-if="errors.title" class="error-message">{{ errors.title }}</p>
+                    placeholder="Enter project title"
+                    class="w-full border-b border-gray-300 p-2 focus:border-green-500 focus:outline-none text-sm" />
+                <p v-if="errors.title" class="text-red-500 text-sm mt-1">{{ errors.title }}</p>
             </div>
 
             <div class="form-group">
-                <label for="details">Details</label>
+                <label for="details" class="text-gray-400 font-semibold text-xs md:text-md uppercase">Details</label>
                 <textarea id="details" v-model="project.details" placeholder="Enter project details"
-                    @input="resizeTextarea, validateField('details')" ref="detailsTextarea"></textarea>
-                <p v-if="errors.details" class="error-message">{{ errors.details }}</p>
+                    @input="resizeTextarea, validateField('details')" ref="detailsTextarea"
+                    class="w-full bg-transparent border-2 border-gray-300 rounded-lg p-2 min-h-[80px] focus:border-green-500 focus:outline-none text-sm"></textarea>
+                <p v-if="errors.details" class="text-red-500 text-sm mt-1">{{ errors.details }}</p>
             </div>
 
-            <div class="add-update-button-container">
-                <button type="submit" class="add-update-button">{{ isEditMode ? 'Update Project' : 'Add Project'
-                    }}</button>
+            <div class="add-update-button-container flex justify-center mt-4">
+                <button type="submit"
+                    class="bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-md text-sm md:text-lg">{{
+                        isEditMode ? 'Update Project' : 'Add Project' }}</button>
             </div>
         </form>
     </div>
@@ -101,114 +104,3 @@ export default {
     },
 };
 </script>
-
-
-<style scoped>
-.add-update-project-container {
-    padding: 30px;
-    margin-top: 50px;
-    margin-bottom: 25px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    width: 92%;
-}
-
-.form-group {
-    width: 100%;
-    margin-bottom: 20px;
-}
-
-label {
-    display: block;
-    margin-bottom: 5px;
-    text-transform: uppercase;
-    color: rgb(181, 177, 177);
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-input {
-    width: 97%;
-    border: none;
-    background-color: #f9f9f9;
-    border-bottom: 1px solid #ddd;
-    padding: 10px;
-    font-size: 1rem;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-textarea {
-    width: 97%;
-    min-height: 80px;
-    background-color: #f9f9f9;
-    border: 2px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
-    padding: 10px;
-    transition: border-color 0.3s, box-shadow 0.3s;
-    overflow: hidden;
-}
-
-
-input:focus,
-textarea:focus {
-    border-color: #4caf50;
-    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-    outline: none;
-}
-
-.add-update-button-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.add-update-button {
-    padding: 12px 20px;
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 18px;
-}
-
-.add-update-button:hover {
-    background-color: #45a049;
-}
-
-.error-message {
-    color: red;
-    font-size: 0.85rem;
-    margin-top: 5px;
-}
-
-@media (max-width:1024px) {
-    .add-update-project-container {
-        width: 88%;
-    }
-
-    h2 {
-        font-size: 1.5rem;
-    }
-}
-
-@media (max-width:575px) {
-    .add-update-project-container {
-        width: 82%;
-    }
-}
-
-@media (max-width:425px) {
-    .add-update-project-container {
-        width: 79%;
-    }
-}
-
-@media (max-width:375px) {
-    .add-update-project-container {
-        width: 75%;
-    }
-}
-</style>
