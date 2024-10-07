@@ -2,7 +2,7 @@
     <div class="add-update-project-container bg-white mt-16 mb-10 p-3 md:p-10 rounded-md">
         <form @submit.prevent="submitForm">
             <div class="form-group py-6">
-                <label for="title" class="text-gray-400 font-semibold text-xs uppercase md:text-md ">Title</label>
+                <label for="title" class="text-gray-400 font-semibold text-xs uppercase md:text-md lg:text-base ">Title</label>
                 <input type="text" id="title" v-model="project.name" @input="validateField('name')"
                     placeholder="Enter project title"
                     class="w-full border-b border-gray-300 p-2 focus:border-green-500 focus:outline-none text-sm" />
@@ -10,10 +10,10 @@
             </div>
 
             <div class="form-group">
-                <label for="details" class="text-gray-400 font-semibold text-xs md:text-md uppercase">Details</label>
+                <label for="details" class="text-gray-400 font-semibold text-xs md:text-md uppercase lg:text-base">Details</label>
                 <textarea id="details" v-model="project.details" placeholder="Enter project details"
                     @input="resizeTextarea, validateField('details')" ref="detailsTextarea"
-                    class="w-full bg-transparent border-2 border-gray-300 rounded-lg p-2 min-h-[80px] focus:border-green-500 focus:outline-none text-sm"></textarea>
+                    class="w-full min-h-[100px] bg-transparent border-2 border-gray-300 rounded-lg p-2 focus:border-green-500 focus:outline-none text-sm"></textarea>
                 <p v-if="errors.details" class="text-red-500 text-sm mt-1">{{ errors.details }}</p>
             </div>
 
@@ -73,7 +73,7 @@ export default {
 
                 } else {
                     const newProject = { ...this.project, id: Date.now() };
-                    projects.push(newProject)
+                    projects.push(newProject);
                 }
                 localStorage.setItem('projects', JSON.stringify(projects));
                 this.$router.push('/');
@@ -82,17 +82,16 @@ export default {
 
         resizeTextarea() {
             const textarea = this.$refs.detailsTextarea;
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
+            textarea.style.height = 'auto'; 
+            textarea.style.height = textarea.scrollHeight + 'px'; 
         }
     },
     mounted() {
-        // Get the id from the route parameter
-        this.id = this.$route.params.id !== undefined ? Number((this.$route.params.id)) : null;
+        this.id = this.$route.params.id !== undefined ? Number(this.$route.params.id) : null;
 
         if (this.id !== null) {
             const projects = JSON.parse(localStorage.getItem('projects')) || [];
-            const projectToEdit = projects.find(project => project.id === (this.id)); // Find the project by id
+            const projectToEdit = projects.find(project => project.id === this.id); // Find the project by id
             if (projectToEdit) {
                 this.project = { ...projectToEdit };
                 this.isEditMode = true;
@@ -101,6 +100,17 @@ export default {
                 this.$router.push('/');
             }
         }
+
+        this.$nextTick(() => {
+            if (this.$refs.detailsTextarea) {
+                this.resizeTextarea();
+            }
+        });
     },
+    watch: {
+        'project.details'() {
+            this.resizeTextarea();
+        }
+    }
 };
 </script>
